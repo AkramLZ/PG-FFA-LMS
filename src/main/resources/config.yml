@@ -1,0 +1,6 @@
+#
+# FFA-LMS Event
+# Codded by ArDevelopers
+#
+dev-section:
+    print-stacktrace: false

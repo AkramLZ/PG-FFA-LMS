@@ -1,0 +1,8 @@
+name: FFA-LMS
+author: ArDevelopers
+version: 1.0
+main: sa.pg.event.ffa.Main
+commands:
+  event:
+  stats:
+  top:
