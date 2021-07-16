@@ -37,4 +37,20 @@ public class FData {
         return -404;
     }
 
+    public void setValue(DataSlot dataSlot, int value) {
+        switch (dataSlot) {
+            case KILLS: {
+                kills = value;
+                break;
+            }
+            case DEATHS: {
+                deaths = value;
+                break;
+            }
+            default: {
+                throw new NullPointerException("Invalid DataSlot");
+            }
+        }
+    }
+
 }

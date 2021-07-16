@@ -20,12 +20,10 @@ public class Data {
 
     private final SQLConnection     connection;
     private final ExecutorService   pool;
-    private final String            id;
 
     public Data(SQLConnection connection) {
         this.connection = connection;
         this.pool       = Executors.newCachedThreadPool();
-        this.id         = generateId("SQL");
     }
 
     public void createTable() {
@@ -33,7 +31,7 @@ public class Data {
             String taskId = generateId("CREATE");
             try {
                 PreparedStatement statement = connection.preparedStatement(
-                        "CREATE TABLE IF NOT EXISTS player_data (UUID VARCHAR(100), Kills INT(100), Deaths INT(100))"
+                        "CREATE TABLE IF NOT EXISTS player_data (Playername VARCHAR(100), UUID VARCHAR(100), Kills INT(100), Deaths INT(100))"
                 );
                 statement.executeUpdate();
                 statement.close();
@@ -52,11 +50,12 @@ public class Data {
             String taskId = generateId("SET");
             try {
                 PreparedStatement statement = connection.preparedStatement(
-                        "INSERT INTO player_data (UUID, Kills, Deaths) VALUES (?, ?, ?)"
+                        "INSERT INTO player_data (Playername, UUID, Kills, Deaths) VALUES (?, ?, ?, ?)"
                 );
-                statement.setString(1, player.getUniqueId().toString());
-                statement.setInt(2, 0);
+                statement.setString(1, player.getName());
+                statement.setString(2, player.getUniqueId().toString());
                 statement.setInt(3, 0);
+                statement.setInt(4, 0);
                 statement.executeUpdate();
                 statement.close();
                 Main.getInstance().getLogger().log(Level.INFO, "[SQL] Successfully executed and closed task " + taskId);
@@ -71,19 +70,15 @@ public class Data {
 
     public String getTop(int top) throws ExecutionException, InterruptedException {
         return CompletableFuture.supplyAsync(() -> {
-            String name = "N/A";
+            String name = "None";
             String taskId = generateId("GET");
             try {
                 PreparedStatement statement = connection.preparedStatement(
-                        "SELECT * FROM player_data ORDER BY Kills"
+                        "SELECT * FROM player_data ORDER BY Kills DESC LIMIT " + top
                 );
                 ResultSet resultSet = statement.executeQuery();
-                int i = 0;
-                while(i < top) {
-                    if(resultSet.next()) {
-                        name = Bukkit.getOfflinePlayer(UUID.fromString(resultSet.getString("UUID"))).getName();
-                    }
-                    i++;
+                while(resultSet.next()) {
+                    name = Bukkit.getOfflinePlayer(UUID.fromString(resultSet.getString("UUID"))).getName();
                 }
                 resultSet.close();
                 statement.close();
@@ -149,6 +144,31 @@ public class Data {
             try {
                 PreparedStatement statement = connection.preparedStatement(
                         "SELECT * FROM player_data WHERE UUID='" + player.getUniqueId() + "'"
+                );
+                ResultSet resultSet = statement.executeQuery();
+                if(resultSet.next()) {
+                    value = resultSet.getInt(dataSlot.getName());
+                }
+                resultSet.close();
+                statement.close();
+                Main.getInstance().getLogger().log(Level.INFO, "[SQL] Successfully executed and closed task " + taskId);
+            } catch (SQLException exception) {
+                if(Main.getInstance().isPrintStacktrace()) {
+                    exception.printStackTrace();
+                }
+                Main.getInstance().getLogger().log(Level.SEVERE, "[SQL] Failed to execute task " + taskId + ", " + exception.getMessage());
+            }
+            return value;
+        }).get();
+    }
+
+    public int getValue(String name, DataSlot dataSlot) throws ExecutionException, InterruptedException {
+        return CompletableFuture.supplyAsync(() -> {
+            int value = -1;
+            String taskId = generateId("GET");
+            try {
+                PreparedStatement statement = connection.preparedStatement(
+                        "SELECT * FROM player_data WHERE Playername='" + name + "'"
                 );
                 ResultSet resultSet = statement.executeQuery();
                 if(resultSet.next()) {

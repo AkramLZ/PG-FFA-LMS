@@ -6,6 +6,9 @@ import sa.pg.event.ffa.commands.TopCommand;
 import sa.pg.event.ffa.impl.plugin.PluginManager;
 import sa.pg.event.ffa.impl.plugin.Provider;
 import sa.pg.event.ffa.listeners.*;
+import sa.pg.event.ffa.manager.EventManager;
+import sa.pg.event.ffa.utils.LocationUtils;
+import sa.pg.event.ffa.utils.RegionUtils;
 
 import java.util.logging.Level;
 
@@ -22,7 +25,9 @@ public class MainProvider implements Provider {
                 new ConnectionListener(),
                 new LeavesDecayListener(),
                 new PlayerInteractListener(),
-                new AchievementAwardedListener()
+                new AchievementAwardedListener(),
+                new DropAndPickupListener(),
+                new HungerListener()
         );
         Main.getInstance().getLogger().log(Level.INFO, "[CommandManager] Loading listeners...");
         PluginManager.registerCommands(
@@ -30,6 +35,9 @@ public class MainProvider implements Provider {
                 new TopCommand(),
                 new StatsCommand()
         );
+        RegionUtils.loadSpawnRegion(Main.getInstance().getConfig());
+        LocationUtils.loadSpawn(Main.getInstance().getConfig());
+        EventManager.setTimeLeft(Main.getInstance().getConfig().getInt("options.event-time"));
     }
 
 }

@@ -1,5 +1,6 @@
 package sa.pg.event.ffa.listeners;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -19,7 +20,9 @@ import sa.pg.event.ffa.utils.board.ScoreboardUtils;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
+@SuppressWarnings("ALL")
 public class ConnectionListener implements Listener {
 
     private final ExecutorService pool = Executors.newCachedThreadPool();
@@ -47,10 +50,14 @@ public class ConnectionListener implements Listener {
 
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
+        event.setJoinMessage(null);
         Player player = event.getPlayer();
+        player.setFireTicks(0);
+        player.setFoodLevel(20);
+        player.setAllowFlight(false);
         new BukkitRunnable() {
             @Override public void run() {
-                player.sendMessage(PREFIX + "§eWelcome to §6FFA LMS §eEvent, this event hosted by discord.gg/pg");
+                player.sendMessage(PREFIX + "§eWelcome to §6FFA §eEvent, this event hosted by discord.gg/pg");
                 if(LocationUtils.getSpawn() != null) {
                     player.teleport(LocationUtils.getSpawn());
                 }
@@ -61,6 +68,8 @@ public class ConnectionListener implements Listener {
             PlayerManager.injectPlayer(player);
             if(EventManager.getEventState() == EventState.LOBBY) {
                 ScoreboardUtils.assignScoreboard(player, ScoreboardType.LOBBY);
+                Bukkit.getOnlinePlayers().stream().filter(filter -> filter != player).collect(Collectors.toList())
+                        .forEach(all -> ScoreboardUtils.updateBoard(all, ScoreboardType.LOBBY));
             }
             if(EventManager.getEventState() == EventState.IN_GAME) {
                 ScoreboardUtils.assignScoreboard(player, ScoreboardType.EVENT);
@@ -77,6 +86,7 @@ public class ConnectionListener implements Listener {
         Player player = event.getPlayer();
         pool.execute(() -> {
             PlayerManager.rejectPlayer(player);
+            ScoreboardUtils.rejectScoreboard(player);
         });
     }
 }

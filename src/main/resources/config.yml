@@ -4,3 +4,7 @@
 #
 dev-section:
     print-stacktrace: false
+    sql-debugger: true
+    clear-database-on-start: true
+options:
+    event-time: 1800 # in seconds

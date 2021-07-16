@@ -1,5 +1,6 @@
 package sa.pg.event.ffa.tasks;
 
+import net.minecraft.server.v1_8_R3.MinecraftServer;
 import org.bukkit.Bukkit;
 import sa.pg.event.ffa.Main;
 import sa.pg.event.ffa.impl.player.data.DataSlot;
@@ -8,6 +9,7 @@ import sa.pg.event.ffa.impl.task.FTask;
 import sa.pg.event.ffa.impl.task.TaskType;
 import sa.pg.event.ffa.manager.EventManager;
 import sa.pg.event.ffa.manager.types.EventState;
+import sa.pg.event.ffa.utils.LocationUtils;
 import sa.pg.event.ffa.utils.board.ScoreboardType;
 import sa.pg.event.ffa.utils.board.ScoreboardUtils;
 
@@ -33,6 +35,9 @@ public class EventTask extends FTask {
                     for(DataSlot dataSlot : DataSlot.values()) {
                         Main.getInstance().getData().setValue(player, dataSlot, PlayerManager.getPlayer(player).getData().getValue(dataSlot));
                     }
+                    MinecraftServer.getServer().postToMainThread(() -> {
+                       player.teleport(LocationUtils.getLocation(Main.getInstance().getConfig(), "ending-spawn"));
+                    });
                 });
                 (EventManager.EVENT_TASK = new EndTask()).start();
             }

@@ -7,6 +7,8 @@ import sa.pg.event.ffa.sql.ConnectionResult;
 import sa.pg.event.ffa.sql.Data;
 import sa.pg.event.ffa.sql.SQLConnection;
 
+import java.io.File;
+import java.sql.SQLException;
 import java.util.logging.Level;
 
 public class Main extends JavaPlugin {
@@ -16,6 +18,7 @@ public class Main extends JavaPlugin {
     private SQLConnection   connection;
     private Data            data;
     private boolean         printStacktrace;
+    private boolean         clearDatabase;
 
     public Main() {
         instance = this;
@@ -23,14 +26,28 @@ public class Main extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        long startTime = System.currentTimeMillis();
+
         saveDefaultConfig();
 
         printCopyright();
 
+        this.clearDatabase       = getConfig().getBoolean("dev-section.clear-database-on-start");
         this.connection          = new SQLConnection();
         this.provider            = new MainProvider();
         this.data                = new Data(connection);
         this.printStacktrace     = instance.getConfig().getBoolean("dev-section.print-stacktrace");
+
+        if(clearDatabase) {
+            File dataFile        = new File(getDataFolder(), "data.db");
+            getLogger().log(Level.INFO, "Delete database enabled, attempting to delete database file...");
+            if(dataFile.delete()) {
+                getLogger().log(Level.INFO, "Successfully deleted database");
+            } else {
+                getLogger().log(Level.SEVERE, "Failed to delete database file");
+            }
+        }
+
         ConnectionResult result  = connection.connect();
 
         if(result == ConnectionResult.ALREADY_CONNECTED) {
@@ -46,16 +63,33 @@ public class Main extends JavaPlugin {
             getLogger().log(Level.SEVERE, "[SQL] Failed to load SQLite library, " + connection.getErrorMessage());
             getServer().getPluginManager().disablePlugin(this);
         } else {
-            getLogger().log(Level.INFO, "[SQL] Successfully connected to SQLite database.");
+            getLogger().log(Level.INFO, "[SQL] Successfully connected to SQLite database and created connection " + connection.getConnectionID() +
+                    " in " + connection.getElapsedTime() + "ms");
         }
 
         data.createTable();
 
         provider.onEnable();
+
+        Bukkit.getConsoleSender().sendMessage(
+                "[" + getDescription().getName() + "] Successfully loaded plugin in " + (System.currentTimeMillis() - startTime) + "ms"
+        );
     }
 
     @Override
     public void onDisable() {
+        provider.onDisable();
+        try {
+            if(connection.close()) {
+                getLogger().log(Level.INFO, "[SQL] Connection " + connection.getConnectionID() + " has been successfully closed.");
+            } else {
+                getLogger().log(Level.WARNING, "[SQL] Failed to close connection " + connection.getConnectionID() + ", are you sure that it is connected?");
+            }
+        } catch (SQLException exception) {
+            if(printStacktrace) {
+                exception.printStackTrace();
+            }
+        }
     }
 
     public boolean isPrintStacktrace() {

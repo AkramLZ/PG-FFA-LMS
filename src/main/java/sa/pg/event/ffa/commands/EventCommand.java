@@ -38,6 +38,7 @@ public class EventCommand extends ICommand {
                 sender.sendMessage(PREFIX + "§2/event start §fstart the current event");
                 sender.sendMessage(PREFIX + "§2/event end §fforce stop for the event");
                 sender.sendMessage(PREFIX + "§2/event setspawn §fset spawn location");
+                sender.sendMessage(PREFIX + "§2/event setendspawn §fset event ending spawn location");
                 sender.sendMessage(PREFIX + "§2/event pos1 §fset spawn's region 1st position");
                 sender.sendMessage(PREFIX + "§2/event pos2 §fset spawn's region 2nd position");
                 sender.sendMessage(PREFIX + "§2/event top1 §fset top 1 npc location");
@@ -60,7 +61,7 @@ public class EventCommand extends ICommand {
                 if(EventManager.getEventState() != EventState.IN_GAME) {
                     sender.sendMessage(PREFIX + "§cYou can't do that now.");
                 } else {
-                    if(EventManager.getTimeLeft() > 1) {
+                    if(EventManager.getTimeLeft() < 1) {
                         sender.sendMessage(PREFIX + "§cYou can't do that now.");
                     } else {
                         EventManager.setTimeLeft(1);
@@ -120,6 +121,14 @@ public class EventCommand extends ICommand {
                 Player player = (Player) sender;
                 LocationUtils.saveLocation(Main.getInstance().getConfig(), "npc.top.3", player.getLocation());
                 sender.sendMessage(PREFIX + "§eSuccessfully saved top 3 npc location in your current location.");
+            } else if(args[0].equalsIgnoreCase("setendspawn")) {
+                if(!(sender instanceof Player)) {
+                    sender.sendMessage(PREFIX + "§cThis command is only for players!");
+                    return false;
+                }
+                Player player = (Player) sender;
+                LocationUtils.saveLocation(Main.getInstance().getConfig(), "ending-spawn", player.getLocation());
+                sender.sendMessage(PREFIX + "§eSuccessfully saved top 2 npc location in your current location.");
             } else {
                 sender.sendMessage(PREFIX + "§cUnorganized command, try \"/event help\" for help.");
             }

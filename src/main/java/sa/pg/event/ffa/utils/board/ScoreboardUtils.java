@@ -29,12 +29,13 @@ public class ScoreboardUtils {
             scoreboards.remove(player);
         }
         ScoreboardObject scoreboardObject = new ScoreboardObject(player);
+        scoreboards.put(player, scoreboardObject);
         if(type == ScoreboardType.LOBBY) {
             scoreboardObject.updateTitle("§c§lEvent §7§l\u2503 §7Waiting");
             scoreboardObject.updateLines(
                     "",
                     "§c§lInformation",
-                    "§fCurrent Event: §bFFA LMS",
+                    "§fCurrent Event: §bFFA",
                     "§fWaiting players: §e" + Bukkit.getOnlinePlayers().size(),
                     "",
                     "§6mc.pg.sa"
@@ -49,7 +50,7 @@ public class ScoreboardUtils {
                     "",
                     "§c§lInformation",
                     "§fTime left: §e" + new SimpleDateFormat("mm:ss").format(date),
-                    "§fAlive: §e" + EventManager.getAlive().size(),
+                    "§fSurvivors: §e" + Bukkit.getOnlinePlayers().size(),
                     "",
                     "§b§lPersonal stats",
                     "§fKills: §e" + PlayerManager.getPlayer(player).getData().getValue(DataSlot.KILLS),
@@ -70,6 +71,16 @@ public class ScoreboardUtils {
             );
         }
         return scoreboardObject;
+    }
+
+    public static void rejectScoreboard(Player player) {
+        if(!scoreboards.containsKey(player))
+            throw new RuntimeException("Cannot reject scoreboard");
+        ScoreboardObject scoreboardObject = scoreboards.get(player);
+        if(scoreboardObject.isDeleted())
+            throw new RuntimeException("Cannot reject scoreboard");
+        scoreboardObject.delete();
+        scoreboards.remove(player);
     }
 
     public static void updateBoard(Player player, ScoreboardType scoreboardType) {
@@ -96,7 +107,7 @@ public class ScoreboardUtils {
                     "",
                     "§c§lInformation",
                     "§fTime left: §e" + new SimpleDateFormat("mm:ss").format(date),
-                    "§fAlive: §e" + EventManager.getAlive().size(),
+                    "§fSurvivors: §e" + Bukkit.getOnlinePlayers().size(),
                     "",
                     "§b§lPersonal stats",
                     "§fKills: §e" + PlayerManager.getPlayer(player).getData().getValue(DataSlot.KILLS),
