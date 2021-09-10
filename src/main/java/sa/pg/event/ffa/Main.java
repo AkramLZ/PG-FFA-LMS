@@ -1,6 +1,7 @@
 package sa.pg.event.ffa;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
 import sa.pg.event.ffa.impl.plugin.Provider;
 import sa.pg.event.ffa.sql.ConnectionResult;
@@ -9,6 +10,9 @@ import sa.pg.event.ffa.sql.SQLConnection;
 
 import java.io.File;
 import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 import java.util.logging.Level;
 
 public class Main extends JavaPlugin {
@@ -19,6 +23,7 @@ public class Main extends JavaPlugin {
     private Data            data;
     private boolean         printStacktrace;
     private boolean         clearDatabase;
+    private Set<UUID>       build;
 
     public Main() {
         instance = this;
@@ -36,6 +41,7 @@ public class Main extends JavaPlugin {
         this.connection          = new SQLConnection();
         this.provider            = new MainProvider();
         this.data                = new Data(connection);
+        this.build               = new HashSet<>();
         this.printStacktrace     = instance.getConfig().getBoolean("dev-section.print-stacktrace");
 
         if(clearDatabase) {
@@ -72,7 +78,7 @@ public class Main extends JavaPlugin {
         provider.onEnable();
 
         Bukkit.getConsoleSender().sendMessage(
-                "[" + getDescription().getName() + "] Successfully loaded plugin in " + (System.currentTimeMillis() - startTime) + "ms"
+                ChatColor.YELLOW + "[" + getDescription().getName() + "] Successfully loaded plugin in " + (System.currentTimeMillis() - startTime) + "ms"
         );
     }
 
@@ -112,10 +118,14 @@ public class Main extends JavaPlugin {
         return data;
     }
 
+    public Set<UUID> getBuild() {
+        return build;
+    }
+
     protected void printCopyright() {
         Bukkit.getConsoleSender().sendMessage("");
         Bukkit.getConsoleSender().sendMessage("§e[FFA-LMS] §9Pro§6Gamer §fFFA LMS Event");
-        Bukkit.getConsoleSender().sendMessage("§c[FFA-LMS] §cAll Rights reversed to ArDevelopers @ 2021 ©");
+        Bukkit.getConsoleSender().sendMessage("§c[FFA-LMS] §cAll Rights reversed to WonderCoders @ 2021 ©");
         Bukkit.getConsoleSender().sendMessage("");
     }
 }

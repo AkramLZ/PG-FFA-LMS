@@ -1,5 +1,6 @@
 package sa.pg.event.ffa;
 
+import sa.pg.event.ffa.commands.BuildCommand;
 import sa.pg.event.ffa.commands.EventCommand;
 import sa.pg.event.ffa.commands.StatsCommand;
 import sa.pg.event.ffa.commands.TopCommand;
@@ -27,13 +28,15 @@ public class MainProvider implements Provider {
                 new PlayerInteractListener(),
                 new AchievementAwardedListener(),
                 new DropAndPickupListener(),
-                new HungerListener()
+                new HungerListener(),
+                new BuildListener()
         );
         Main.getInstance().getLogger().log(Level.INFO, "[CommandManager] Loading listeners...");
         PluginManager.registerCommands(
                 new EventCommand(),
                 new TopCommand(),
-                new StatsCommand()
+                new StatsCommand(),
+                new BuildCommand()
         );
         RegionUtils.loadSpawnRegion(Main.getInstance().getConfig());
         LocationUtils.loadSpawn(Main.getInstance().getConfig());
